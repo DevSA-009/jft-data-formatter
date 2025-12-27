@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Order Formatter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>Order Formatter</h1>
+
+    <textarea id="inputText" placeholder="Paste order text here..."></textarea>
+
+    <div class="btn-group">
+        <button onclick="formatOrders()">Format</button>
+        <button id="copyBtn" onclick="copyAsJSON()" disabled>Copy as JSON</button>
+        <button id="printBtn" onclick="printTables()" disabled>Print / PDF</button>
+    </div>   
+    </div>
+
+
+    <div id="output" class="print-area"></div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
