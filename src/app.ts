@@ -11,7 +11,7 @@ export class OrderFormatterApp {
   private ih = new ImageHandler();
   private cr = new ColumnResizer();
   private showIndex = false;
-  private currentFormat: FormatType = "format2";
+  private currentFormat: FormatType = "format1";
 
   initialize(): void {
     this.loadSavedData();
@@ -85,7 +85,7 @@ export class OrderFormatterApp {
       fType = ft?.value || "PP";
 
     out.innerHTML =
-      this.currentFormat === "format5"
+      this.currentFormat === "format2"
         ? gen.generateSplitLayout(pName, jType, fType, analysis, this.ih.image)
         : gen.generateTopInfo(pName, jType, fType, analysis, this.ih.image) +
           gen.generateDetailTable(analysis);
@@ -118,7 +118,7 @@ export class OrderFormatterApp {
       fType = ft?.value || "PP";
 
     out.innerHTML =
-      this.currentFormat === "format5"
+      this.currentFormat === "format2"
         ? gen.generateSplitLayout(pName, jType, fType, analysis, this.ih.image)
         : gen.generateTopInfo(pName, jType, fType, analysis, this.ih.image) +
           gen.generateDetailTable(analysis);

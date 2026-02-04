@@ -77,7 +77,7 @@ export interface ValidationResult {
   reason?: keyof TableBaseHeads;
 }
 
-export type FormatType = "format2" | "format4" | "format5";
+export type FormatType = "format1" | "format2";
 
 export type ToastType = "info" | "success" | "error";
 
