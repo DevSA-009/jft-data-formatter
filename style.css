@@ -252,6 +252,19 @@ textarea:focus {
   border-color: #6e7781;
 }
 
+/* Or better – in CSS */
+.disabled-label {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+  color: #777;
+}
+
+    .summary-side table.resizable-table {
+      margin-top: 0px;
+    }
+
 .btn-secondary {
   background: #f6f8fa;
   color: #24292f;
@@ -288,11 +301,11 @@ textarea:focus {
   padding: 33px 47px;
 }
 
-/* ===== TOP INFO SECTION - Summary wider ===== */
+/* ===== TOP INFO SECTION ===== */
 
 .top-info-grid {
   display: grid;
-  grid-template-columns: 285px 1fr 480px;
+  grid-template-columns: 0.6fr 1fr 1.1fr;
   gap: 23px;
   margin-bottom: 27px;
   padding: 17px;
@@ -328,7 +341,7 @@ textarea:focus {
 }
 
 .info-label {
-  font-size: 0.72rem;
+  font-size: clamp(0.68rem, 2.1vw, 0.78rem);
   font-weight: 700;
   text-transform: uppercase;
   color: #57606a;
@@ -337,7 +350,7 @@ textarea:focus {
 }
 
 .info-value {
-  font-size: 1rem;
+  font-size: clamp(0.92rem, 3vw, 1.05rem);
   font-weight: 700;
   color: #24292f;
 }
@@ -389,7 +402,7 @@ textarea:focus {
 }
 
 .split-layout .info-label {
-  font-size: 0.72rem;
+  font-size: clamp(0.68rem, 2.1vw, 0.78rem);
   font-weight: 700;
   text-transform: uppercase;
   color: #57606a;
@@ -398,7 +411,7 @@ textarea:focus {
 }
 
 .split-layout .info-value {
-  font-size: 1.08rem;
+  font-size: clamp(0.98rem, 3.2vw, 1.12rem);
   font-weight: 700;
   color: #24292f;
 }
@@ -436,7 +449,6 @@ table {
   font-size: 0.82rem;
 }
 
-/* Resizable columns */
 th {
   position: relative;
   user-select: none;
@@ -470,7 +482,6 @@ tbody tr:hover {
   background-color: #f3f4f6;
 }
 
-/* LONG sleeve highlight - cream/ivory formal tone */
 tr.long-sleeve {
   background-color: #faf6ed !important;
 }
@@ -483,6 +494,7 @@ tr.error-row {
   color: #cf222e;
   font-weight: 600;
 }
+
 tr.error-row td {
   border: 1px double #cf222e;
 }
@@ -513,6 +525,7 @@ td.empty-cell {
   font-weight: 700;
   border-top: 1px double #24292f !important;
 }
+
 
 /* ===== TOAST ===== */
 
@@ -551,12 +564,150 @@ td.empty-cell {
   background: #0969da;
 }
 
-/* ===== PRINT STYLES ===== */
+/* ==========================================================================
+   ENHANCED MOBILE RESPONSIVENESS
+   ========================================================================== */
 
+/* Extra small devices (phones, portrait) */
+@media (max-width: 575px) {
+  body {
+    font-size: 15px;
+  }
+
+  .container {
+    padding: 0 12px;
+  }
+
+  .app-header,
+  .format-selection,
+  .btn-group,
+  .output-header {
+    padding: 16px 12px;
+  }
+
+  .main-content {
+    flex-direction: column;
+    gap: 20px;
+    padding: 16px 12px;
+  }
+
+  .input-section {
+    width: 100%;
+  }
+
+  textarea {
+    min-height: 300px;
+    font-size: 0.96rem;
+  }
+
+  .info-section {
+    gap: 16px;
+  }
+
+  .info-card input,
+  .info-card select,
+  .btn {
+    padding: 12px 14px;
+    font-size: 0.98rem;
+  }
+
+  .format-options {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .format-options label {
+    padding: 14px 16px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .btn-large {
+    padding: 14px;
+  }
+
+  #imagePreview img {
+    max-height: 140px;
+  }
+
+  .output-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .output-actions button,
+  .output-actions .checkbox-label {
+    width: 100%;
+  }
+}
+
+/* Small devices & tablets */
+@media (max-width: 991px) {
+  .main-content {
+    padding: 20px 20px;
+  }
+
+  .top-info-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .info-grid {
+    grid-template-columns: repeat(2,1fr);
+    gap: 16px;
+  }
+
+  .image-side img {
+    max-height: 220px;
+  }
+
+  .split-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .split-layout .left-column {
+    order: 1;
+  }
+
+  .split-layout .right-column {
+    order: 2;
+  }
+
+  table {
+    font-size: 0.88rem;
+  }
+
+  th,
+  td {
+    padding: 8px 7px;
+  }
+
+  .print-area {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #output {
+    padding: 20px 12px;
+  }
+
+  .btn,
+  .btn-large {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* PRINT STYLES */
 @media print {
   @page {
     size: A4 landscape;
-    margin: 10mm;
+    margin: 0;
+    padding: 7mm;
   }
 
   html,
@@ -570,6 +721,10 @@ td.empty-cell {
     font-size: 11.3px;
   }
 
+  .info-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
   .output-header {
     display: none !important;
   }
@@ -579,8 +734,7 @@ td.empty-cell {
   }
 
   .top-info-grid {
-    padding: 11px;
-    page-break-inside: avoid;
+    grid-template-columns: 0.5fr 0.5fr 1fr !important;
   }
 
   .image-side img {
@@ -588,17 +742,12 @@ td.empty-cell {
   }
 
   table {
-    page-break-inside: avoid;
     font-size: 10.3px;
   }
 
   th,
   td {
     padding: 5px 7px;
-  }
-
-  .section-header {
-    page-break-after: avoid;
   }
 
   .split-layout {
@@ -608,6 +757,15 @@ td.empty-cell {
 
   .split-layout .left-column .image-container img {
     max-height: 265px;
+  }
+
+  /* Slightly smaller text in print for info-grid */
+  .info-label {
+    font-size: 9.5px;
+  }
+
+  .info-value {
+    font-size: 12.8px;
   }
 
   #output::after {
@@ -620,54 +778,14 @@ td.empty-cell {
     padding-top: 11px;
     border-top: 1px solid #ddd;
   }
+
+  thead {
+    display: table-row-group !important;
+  }
 }
 
 @media screen {
   #output::after {
     display: none;
-  }
-}
-
-/* ===== RESPONSIVE ===== */
-
-@media (max-width: 1200px) {
-  .top-info-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .info-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .split-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    flex-direction: column;
-  }
-
-  .input-section {
-    flex: 1;
-  }
-
-  .info-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .format-options {
-    flex-direction: column;
-  }
-
-  .output-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .output-actions button,
-  .output-actions .checkbox-label {
-    width: 100%;
   }
 }
