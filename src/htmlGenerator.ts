@@ -14,7 +14,7 @@ export class HTMLGenerator {
     private summaryData: Record<string, SummaryData>,
     private invalidCount: number,
     private showIndex: boolean,
-  ) {}
+  ) { }
 
   generateTopInfo(
     pName: string,
@@ -147,6 +147,10 @@ export class HTMLGenerator {
               mainValue === head
             ) {
               mainValue = YES;
+            }
+
+            if (mainValue.length > 12) {
+              mainValue = `${mainValue.slice(0, 12)}...`
             }
 
             html += `<td>${mainValue || fallbackValue}</td>`;
