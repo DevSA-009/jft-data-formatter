@@ -11,7 +11,6 @@ export class OrderFormatterApp {
   private ih = new ImageHandler();
   private cr = new ColumnResizer();
   private showIndex = false;
-  private currentFormat: FormatType = "format1";
 
   initialize(): void {
     this.loadSavedData();
@@ -52,7 +51,9 @@ export class OrderFormatterApp {
 
   private formatOrders(): void {
     const ta = getElement<HTMLTextAreaElement>("inputText");
-    const pn = getElement<HTMLInputElement>("clientName");
+    const clientAddress = getElement<HTMLInputElement>("clientAddress");
+    const clientContact = getElement<HTMLInputElement>("clientContact");
+    const clientName = getElement<HTMLInputElement>("clientName");
     const jt = getElement<HTMLSelectElement>("jerseyType");
     const ft = getElement<HTMLSelectElement>("fabricsType");
     const fr = document.querySelector<HTMLInputElement>(
@@ -68,8 +69,6 @@ export class OrderFormatterApp {
     }
 
     localStorage.setItem(STORAGE_KEYS.ORDER_DATA, ta.value);
-    this.currentFormat = fr.value as FormatType;
-
     const analysis = this.dp.analyzeSummary();
     const out = getElement("output");
     if (!out) return;
@@ -80,15 +79,22 @@ export class OrderFormatterApp {
       this.dp.invalidCount,
       this.showIndex,
     );
-    const pName = pn?.value || "",
+    const cName = clientName?.value || "",
+      cAddress = clientAddress?.value || "",
+      cContact = clientContact?.value || "",
       jType = jt?.value || "POLO",
       fType = ft?.value || "PP";
 
     out.innerHTML =
-      this.currentFormat === "format2"
-        ? gen.generateSplitLayout(pName, jType, fType, analysis, this.ih.image)
-        : gen.generateTopInfo(pName, jType, fType, analysis, this.ih.image) +
-          gen.generateDetailTable(analysis);
+      gen.generateTopInfo(
+        cName,
+        cAddress,
+        cContact,
+        jType,
+        fType,
+        analysis,
+        this.ih.image,
+      ) + gen.generateDetailTable(analysis);
 
     const ip = getElement("inputPage"),
       op = getElement("outputPage");
@@ -100,7 +106,9 @@ export class OrderFormatterApp {
   }
 
   private regenerateOutput(): void {
-    const pn = getElement<HTMLInputElement>("clientName");
+    const clientAddress = getElement<HTMLInputElement>("clientAddress");
+    const clientContact = getElement<HTMLInputElement>("clientContact");
+    const clientName = getElement<HTMLInputElement>("clientName");
     const jt = getElement<HTMLSelectElement>("jerseyType");
     const ft = getElement<HTMLSelectElement>("fabricsType");
     const out = getElement("output");
@@ -113,15 +121,22 @@ export class OrderFormatterApp {
       this.dp.invalidCount,
       this.showIndex,
     );
-    const pName = pn?.value || "",
+    const cName = clientName?.value || "",
+      cAddress = clientAddress?.value || "",
+      cContact = clientContact?.value || "",
       jType = jt?.value || "POLO",
       fType = ft?.value || "PP";
 
     out.innerHTML =
-      this.currentFormat === "format2"
-        ? gen.generateSplitLayout(pName, jType, fType, analysis, this.ih.image)
-        : gen.generateTopInfo(pName, jType, fType, analysis, this.ih.image) +
-          gen.generateDetailTable(analysis);
+      gen.generateTopInfo(
+        cName,
+        cAddress,
+        cContact,
+        jType,
+        fType,
+        analysis,
+        this.ih.image,
+      ) + gen.generateDetailTable(analysis);
 
     this.cr.initializeResizing();
   }

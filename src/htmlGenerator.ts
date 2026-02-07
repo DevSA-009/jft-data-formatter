@@ -14,16 +14,20 @@ export class HTMLGenerator {
     private summaryData: Record<string, SummaryData>,
     private invalidCount: number,
     private showIndex: boolean,
-  ) { }
+  ) {}
 
   generateTopInfo(
-    pName: string,
+    cName: string,
+    cAddress: string,
+    cContact: string,
     jType: string,
     fType: string,
     analysis: AnalysisResult,
     imgSrc: string,
   ): string {
-    const dName = pName.trim() || "________";
+    const dName = cName.trim() || "________";
+    const dAddress = cAddress.trim() || "________";
+    const dContact = cContact.trim() || "XXXXXXXX";
     return `<div class="top-info-grid">
       <div class="image-side"><img src="${imgSrc}" alt="Design" /></div>
       <div class="info-grid">
@@ -33,6 +37,8 @@ export class HTMLGenerator {
         <div class="info-item"><span class="info-label">Sleeve</span><span class="info-value">${analysis.sleeveInfo}</span></div>
         <div class="info-item"><span class="info-label">RIB</span><span class="info-value">${analysis.ribInfo}</span></div>
         <div class="info-item"><span class="info-label">PANT</span><span class="info-value">${analysis.pantInfo}</span></div>
+        <div class="info-item"><span class="info-label">Client Contact:</span><span class="info-value">${dContact}</span></div>
+        <div class="info-item"><span class="info-label">Client Address:</span><span class="info-value">${dAddress}</span></div>
       </div>
       <div class="summary-side">${this.generateSummaryTable(analysis)}</div>
     </div>`;
@@ -150,7 +156,7 @@ export class HTMLGenerator {
             }
 
             if (mainValue.length > 12) {
-              mainValue = `${mainValue.slice(0, 12)}...`
+              mainValue = `${mainValue.slice(0, 12)}...`;
             }
 
             html += `<td>${mainValue || fallbackValue}</td>`;
@@ -214,29 +220,5 @@ export class HTMLGenerator {
       });
 
     return html + "</tbody></table>";
-  }
-
-  generateSplitLayout(
-    pName: string,
-    jType: string,
-    fType: string,
-    analysis: AnalysisResult,
-    imgSrc: string,
-  ): string {
-    const dName = pName.trim() || "________";
-    return `<div class="split-layout"><div class="left-column">
-      <div class="image-container"><img src="${imgSrc}" alt="Design" /></div>
-      <div class="info-block">
-        <div class="info-item"><span class="info-label">Client Name:</span><span class="info-value">${dName}</span></div>
-        <div class="info-item"><span class="info-label">Jersey Type:</span><span class="info-value">${jType}</span></div>
-        <div class="info-item"><span class="info-label">Fabrics:</span><span class="info-value">${fType}</span></div>
-        <div class="info-item"><span class="info-label">Sleeve:</span><span class="info-value">${analysis.sleeveInfo}</span></div>
-        <div class="info-item"><span class="info-label">RIB:</span><span class="info-value">${analysis.ribInfo}</span></div>
-        <div class="info-item"><span class="info-label">PANT:</span><span class="info-value">${analysis.pantInfo}</span></div>
-      </div>
-      ${this.generateSummaryTable(analysis)}
-    </div><div class="right-column">
-      ${this.generateDetailTable(analysis)}
-    </div></div>`;
   }
 }

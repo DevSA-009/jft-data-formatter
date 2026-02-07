@@ -156,6 +156,38 @@ textarea:focus {
   flex-direction: column;
 }
 
+/* Side-by-side Client Address + Contact */
+.client-contact-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 0; /* we'll control spacing via children */
+}
+
+.client-contact-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.client-contact-item label {
+  font-weight: 700;
+  margin-bottom: 7px;
+  font-size: 0.87rem;
+}
+
+.client-contact-item input {
+  width: 100%;
+  padding: 9px 13px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  font-size: 0.87rem;
+}
+
+.client-contact-item input:focus {
+  outline: none;
+  border-color: #0969da;
+  box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.1);
+}
 .info-card label {
   font-weight: 700;
   margin-bottom: 7px;
@@ -261,9 +293,9 @@ textarea:focus {
   color: #777;
 }
 
-    .summary-side table.resizable-table {
-      margin-top: 0px;
-    }
+.summary-side table.resizable-table {
+  margin-top: 0px;
+}
 
 .btn-secondary {
   background: #f6f8fa;
@@ -526,7 +558,6 @@ td.empty-cell {
   border-top: 1px double #24292f !important;
 }
 
-
 /* ===== TOAST ===== */
 
 .toast {
@@ -640,6 +671,11 @@ td.empty-cell {
   .output-actions .checkbox-label {
     width: 100%;
   }
+
+  .client-contact-row {
+    flex-direction: column;
+    gap: 14px;
+  }
 }
 
 /* Small devices & tablets */
@@ -654,7 +690,7 @@ td.empty-cell {
   }
 
   .info-grid {
-    grid-template-columns: repeat(2,1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
 
