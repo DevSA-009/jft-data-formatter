@@ -123,7 +123,7 @@ export class DataProcessor {
   ): string {
     const analysis = this.analyzeSummary();
     let text = `Client Name: ${clientName || "_______________"}\nClient Contact: ${clientContact || "_______________"}\nClient Address: ${clientAddress || "_______________"}\nJersey Type: ${jerseyType}\nFabrics: ${fabricsType}\n`;
-    text += `Sleeve: ${analysis.sleeveInfo}\nRIB: ${analysis.ribInfo}\nPANT: ${analysis.pantInfo}\n\nSUMMARY:\n========\n`;
+    text += `Sleeve: ${analysis.sleeveInfo}\nPANT: ${analysis.pantInfo}\n\nSUMMARY:\n========\n`;
 
     let totalBody = 0,
       totalLong = 0,
@@ -138,11 +138,23 @@ export class DataProcessor {
       totalShort += s.SHORT;
       totalRIB += s.RIB;
       totalPant += s.PANT;
+
+      const longSleeveRIB =
+        this.validRows
+          .filter((r) => r.SLEEVE === "LONG" && r.RIB !== "NO")
+          .pop()?.RIB || OrderKeywords.NO;
+      const shortSleeveRIB =
+        this.validRows
+          .filter((r) => r.SLEEVE === "SHORT" && r.RIB !== "NO")
+          .pop()?.RIB || OrderKeywords.NO;
+
       text += `${formatSizeForDisplay(size)}: ${s.TOTAL} pcs`;
       if (analysis.hasLongInSummary && analysis.hasShortInSummary)
-        text += ` (LONG = ${s.LONG}, SHORT = ${s.SHORT})`;
-      else if (analysis.hasLongInSummary) text += ` (LONG = ${s.LONG})`;
-      else if (analysis.hasShortInSummary) text += ` (SHORT = ${s.SHORT})`;
+        text += ` (LONG = ${s.LONG} [RIB = ${longSleeveRIB}], SHORT = ${s.SHORT}) [RIB = ${shortSleeveRIB}]`;
+      else if (analysis.hasLongInSummary)
+        text += ` (LONG = ${s.LONG} [RIB = ${longSleeveRIB}])`;
+      else if (analysis.hasShortInSummary)
+        text += ` (SHORT = ${s.SHORT} [RIB = ${shortSleeveRIB}])`;
       if (analysis.hasPantInSummary) text += ` | PANT = ${s.PANT}`;
       text += "\n";
     });
