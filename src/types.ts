@@ -19,6 +19,17 @@ export enum OrderKeywords {
   STRUCTURE = "STRUCTURE",
 }
 
+export type SizeKey = (typeof SIZE_ORDER)[number];
+
+export type SleeveKey =
+  | `${typeof OrderKeywords.LONG}`
+  | `${typeof OrderKeywords.SHORT}`;
+
+export type RIBKey =
+  | `${OrderKeywords.NO}`
+  | `${OrderKeywords.CUFF}`
+  | `${OrderKeywords.RIB}`;
+
 export const TableBaseHeads = [
   `${OrderKeywords.NAME}`,
   `${OrderKeywords.NUMBER}`,
@@ -39,13 +50,10 @@ export const SummaryTableHeads = [
 export type TableBaseHeads = {
   NAME: string;
   NUMBER: string;
-  SIZE: (typeof SIZE_ORDER)[number];
-  SLEEVE: `${OrderKeywords.SHORT}` | `${OrderKeywords.LONG}`;
-  RIB: `${OrderKeywords.NO}` | `${OrderKeywords.CUFF}` | `${OrderKeywords.RIB}`;
-  PANT:
-    | `${OrderKeywords.SHORT}`
-    | `${OrderKeywords.LONG}`
-    | `${OrderKeywords.NO}`;
+  SIZE: SizeKey;
+  SLEEVE: SleeveKey;
+  RIB: RIBKey;
+  PANT: SleeveKey | `${OrderKeywords.NO}`;
 };
 
 export interface OrderRow extends TableBaseHeads {
@@ -105,3 +113,14 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const PLACEHOLDER_IMAGE = placeHolderImg;
+
+export type DataForJson = Record<
+  SizeKey,
+  {
+    SUMMARY: {
+      SLEEVE: Record<SleeveKey, { RIB: RIBKey; COUNT: 0 }>;
+      PANT: Record<SleeveKey, number>;
+    };
+    DATA: Record<OrderKeywords.NAME | OrderKeywords.NUMBER, string>[];
+  }
+>;

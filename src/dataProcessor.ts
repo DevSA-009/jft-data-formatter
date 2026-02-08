@@ -1,5 +1,13 @@
 // src/dataProcessor.ts
-import { AnalysisResult, OrderKeywords, OrderRow, SummaryData } from "./types";
+import {
+  AnalysisResult,
+  DataForJson,
+  OrderKeywords,
+  OrderRow,
+  RIBKey,
+  SIZE_ORDER,
+  SummaryData,
+} from "./types";
 import {
   formatSizeForDisplay,
   parseLine,
@@ -108,16 +116,19 @@ export class DataProcessor {
 
   generatePlainText(
     clientName: string,
+    clientAddress: string,
+    clientContact: string,
     jerseyType: string,
     fabricsType: string,
   ): string {
     const analysis = this.analyzeSummary();
-    let text = `Client Name: ${clientName || "_______________"}\nJersey Type: ${jerseyType}\nFabrics: ${fabricsType}\n`;
+    let text = `Client Name: ${clientName || "_______________"}\nClient Contact: ${clientContact || "_______________"}\nClient Address: ${clientAddress || "_______________"}\nJersey Type: ${jerseyType}\nFabrics: ${fabricsType}\n`;
     text += `Sleeve: ${analysis.sleeveInfo}\nRIB: ${analysis.ribInfo}\nPANT: ${analysis.pantInfo}\n\nSUMMARY:\n========\n`;
 
     let totalBody = 0,
       totalLong = 0,
       totalShort = 0,
+      totalRIB = 0,
       totalPant = 0;
 
     sortSizes(Object.keys(this.summaryData)).forEach((size) => {
@@ -125,6 +136,7 @@ export class DataProcessor {
       totalBody += s.TOTAL;
       totalLong += s.LONG;
       totalShort += s.SHORT;
+      totalRIB += s.RIB;
       totalPant += s.PANT;
       text += `${formatSizeForDisplay(size)}: ${s.TOTAL} pcs`;
       if (analysis.hasLongInSummary && analysis.hasShortInSummary)
@@ -163,19 +175,50 @@ export class DataProcessor {
   }
 
   exportToJSON(): string {
+    // Create all sizes with empty structure first
+    const groupedData = SIZE_ORDER.reduce((acc, size) => {
+      acc[size] = {
+        SUMMARY: {
+          SLEEVE: {
+            LONG: { COUNT: 0, RIB: "NO" as RIBKey },
+            SHORT: { COUNT: 0, RIB: "NO" as RIBKey },
+          },
+          PANT: {
+            LONG: 0,
+            SHORT: 0,
+          },
+        },
+        DATA: [],
+      };
+      return acc;
+    }, {} as DataForJson);
+
     const filtered = this.validRows.filter((r) => r.VALID);
-    const grouped: Record<string, any[]> = {};
-    sortSizes([...new Set(filtered.map((r) => r.SIZE))]).forEach((size) => {
-      grouped[size] = filtered
-        .filter((r) => r.SIZE === size)
-        .map((r) => ({
-          NAME: r.NAME,
-          NO: r.NUMBER,
-          SLEEVE: r.SLEEVE,
-          RIB: r.RIB,
-          PANT: r.PANT,
-        }));
+
+    filtered.forEach((item) => {
+      const { NAME, NUMBER, PANT, RIB, SIZE, SLEEVE } = item;
+
+      // Now it's guaranteed to exist
+      const summary = groupedData[SIZE].SUMMARY;
+      const data = groupedData[SIZE].DATA;
+
+      // Update sleeve count
+      summary.SLEEVE[SLEEVE].COUNT++;
+
+      // If there's a rib, update it (last one wins)
+      if (RIB !== "NO") {
+        summary.SLEEVE[SLEEVE].RIB = RIB;
+      }
+
+      // Update pant count
+      if (PANT !== "NO") {
+        summary.PANT[PANT]++;
+      }
+
+      // Add player data
+      data.push({ NAME, NUMBER });
     });
-    return JSON.stringify(grouped);
+
+    return JSON.stringify(groupedData, null, 0);
   }
 }

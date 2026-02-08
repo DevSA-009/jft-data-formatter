@@ -24,6 +24,14 @@ export class OrderFormatterApp {
     if (data && ta) ta.value = data;
   }
 
+  private actionBtnDisable(): void {
+    const disable = (id: string, action: boolean) =>
+      ((getElement(id) as HTMLButtonElement).disabled = action);
+    disable("copyPlainBtn", !!this.dp.invalidCount);
+    disable("copyBtnOutput", !!this.dp.invalidCount);
+    disable("printBtnOutput", !!this.dp.invalidCount);
+  }
+
   private attachEventListeners(): void {
     const attach = (id: string, event: string, handler: (e?: any) => void) => {
       const el = getElement(id);
@@ -103,6 +111,7 @@ export class OrderFormatterApp {
 
     showToast("Formatted", "success");
     this.cr.initializeResizing();
+    this.actionBtnDisable();
   }
 
   private regenerateOutput(): void {
@@ -149,11 +158,15 @@ export class OrderFormatterApp {
   }
 
   private copyAsPlainText(): void {
-    const pn = getElement<HTMLInputElement>("clientName");
+    const clientAddress = getElement<HTMLInputElement>("clientAddress");
+    const clientContact = getElement<HTMLInputElement>("clientContact");
+    const clientName = getElement<HTMLInputElement>("clientName");
     const jt = getElement<HTMLSelectElement>("jerseyType");
     const ft = getElement<HTMLSelectElement>("fabricsType");
     const text = this.dp.generatePlainText(
-      pn?.value || "",
+      clientName?.value || "",
+      clientAddress?.value || "",
+      clientContact?.value || "",
       jt?.value || "POLO",
       ft?.value || "PP",
     );
