@@ -215,9 +215,15 @@ export class DataProcessor {
         apply: [] as SleeveKey[],
       },
       pant: [] as SleeveKey[],
+      total: 0,
     };
+    console.log(this.summaryData);
 
     const filtered = this.validRows.filter((r) => r.VALID);
+
+    basic.total = filtered.length;
+
+    console.log(basic);
 
     filtered.forEach((item) => {
       const { NAME, NUMBER, PANT, RIB, SIZE, SLEEVE } = item;
@@ -225,6 +231,7 @@ export class DataProcessor {
       // Now it's guaranteed to exist
       const summary = groupedData[SIZE].SUMMARY;
       const data = groupedData[SIZE].DATA;
+      // total+=data.length;
 
       // Update sleeve count
       summary.SLEEVE[SLEEVE]++;
