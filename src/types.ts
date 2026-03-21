@@ -116,14 +116,38 @@ export const STORAGE_KEYS = {
 
 export const PLACEHOLDER_IMAGE = placeHolderImg;
 
-export type DataForJson = Record<
+export type FlatSummary = {
+  SHORT_SLEEVE: number;
+  LONG_SLEEVE: number;
+  SHORT_PANT: number;
+  LONG_PANT: number;
+  BODY: number;
+};
+
+export type Player = Record<OrderKeywords.NAME | OrderKeywords.NUMBER, string>;
+
+export type InputDetails = Record<
   SizeKey,
   {
-    SUMMARY: Record<
-      OrderKeywords.SLEEVE | OrderKeywords.PANT,
-      Record<SleeveKey, number>
-    >;
-    DATA: Record<OrderKeywords.NAME | OrderKeywords.NUMBER, string>[];
+    SUMMARY: {
+      SLEEVE: {
+        SHORT: number;
+        LONG: number;
+      };
+      PANT: {
+        SHORT: number;
+        LONG: number;
+      };
+    };
+    DATA: Player[];
+  }
+>;
+
+export type OutputDetails = Record<
+  SizeKey,
+  {
+    SUMMARY: FlatSummary;
+    DATA: Player[];
   }
 >;
 

@@ -1,10 +1,11 @@
 // src/dataProcessor.ts
 import {
   AnalysisResult,
-  DataForJson,
+  InputDetails,
   JerseyType,
   OrderKeywords,
   OrderRow,
+  OutputDetails,
   RIBKey,
   SIZE_ORDER,
   SleeveKey,
@@ -188,6 +189,40 @@ export class DataProcessor {
     return text;
   }
 
+  transformDetails(details: InputDetails): OutputDetails {
+    const result = {} as OutputDetails;
+
+    for (const size of SIZE_ORDER) {
+      const item = details[size];
+
+      if (item) {
+        result[size] = {
+          SUMMARY: {
+            SHORT_SLEEVE: item.SUMMARY?.SLEEVE?.SHORT ?? 0,
+            LONG_SLEEVE: item.SUMMARY?.SLEEVE?.LONG ?? 0,
+            SHORT_PANT: item.SUMMARY?.PANT?.SHORT ?? 0,
+            LONG_PANT: item.SUMMARY?.PANT?.LONG ?? 0,
+            BODY: item.DATA?.length ?? 0,
+          },
+          DATA: item.DATA ?? [],
+        };
+      } else {
+        result[size] = {
+          SUMMARY: {
+            SHORT_SLEEVE: 0,
+            LONG_SLEEVE: 0,
+            SHORT_PANT: 0,
+            LONG_PANT: 0,
+            BODY: 0,
+          },
+          DATA: [],
+        };
+      }
+    }
+
+    return result;
+  }
+
   exportToJSON(jerseyType: JerseyType): string {
     // Create all sizes with empty structure first
     const groupedData = SIZE_ORDER.reduce((acc, size) => {
@@ -205,7 +240,7 @@ export class DataProcessor {
         DATA: [],
       };
       return acc;
-    }, {} as DataForJson);
+    }, {} as InputDetails);
 
     const basic = {
       type: jerseyType,
@@ -217,13 +252,10 @@ export class DataProcessor {
       pant: [] as SleeveKey[],
       total: 0,
     };
-    console.log(this.summaryData);
 
     const filtered = this.validRows.filter((r) => r.VALID);
 
     basic.total = filtered.length;
-
-    console.log(basic);
 
     filtered.forEach((item) => {
       const { NAME, NUMBER, PANT, RIB, SIZE, SLEEVE } = item;
@@ -265,10 +297,12 @@ export class DataProcessor {
       data.push({ NAME, NUMBER });
     });
 
+    const transformedDetails = this.transformDetails(groupedData);
+
     return JSON.stringify(
       {
         basic,
-        details: groupedData,
+        details: transformedDetails,
       },
       null,
       0,
