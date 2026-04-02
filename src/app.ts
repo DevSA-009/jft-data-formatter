@@ -11,6 +11,7 @@ export class OrderFormatterApp {
   private ih = new ImageHandler();
   private cr = new ColumnResizer();
   private showIndex = false;
+  private uppercase = false;
 
   initialize(): void {
     this.loadSavedData();
@@ -22,6 +23,14 @@ export class OrderFormatterApp {
     const data = localStorage.getItem(STORAGE_KEYS.ORDER_DATA);
     const ta = getElement<HTMLTextAreaElement>("inputText");
     if (data && ta) ta.value = data;
+
+    const savedFormat = localStorage.getItem(STORAGE_KEYS.FORMAT);
+    if (savedFormat) {
+      const radio = document.querySelector<HTMLInputElement>(
+        `input[name="format"][value="${savedFormat}"]`,
+      );
+      if (radio) radio.checked = true;
+    }
   }
 
   private actionBtnDisable(): void {
@@ -45,11 +54,23 @@ export class OrderFormatterApp {
     attach("backBtn", "click", () => this.goBackToInput());
     attach("copyPlainBtn", "click", () => this.copyAsPlainText());
     attach("copyBtnOutput", "click", () => this.copyAsJSON());
-    attach("printBtnOutput", "click", () => window.print());
+    attach("printBtnOutput", "click", () => this.printOutput());
     attach("showIndexCheckbox", "change", (e) => {
       this.showIndex = e.target.checked;
       this.regenerateOutput();
     });
+    attach("uppercaseCheckbox", "change", (e) => {
+      this.uppercase = e.target.checked;
+      this.regenerateOutput();
+    });
+
+    document
+      .querySelectorAll<HTMLInputElement>('input[name="format"]')
+      .forEach((r) =>
+        r.addEventListener("change", () =>
+          localStorage.setItem(STORAGE_KEYS.FORMAT, r.value),
+        ),
+      );
 
     document.addEventListener("paste", (e) => this.ih.handlePaste(e));
     document.addEventListener("keydown", (e) =>
@@ -57,18 +78,47 @@ export class OrderFormatterApp {
     );
   }
 
-  private formatOrders(): void {
-    const ta = getElement<HTMLTextAreaElement>("inputText");
-    const clientAddress = getElement<HTMLInputElement>("clientAddress");
-    const clientContact = getElement<HTMLInputElement>("clientContact");
-    const clientName = getElement<HTMLInputElement>("clientName");
-    const jt = getElement<HTMLSelectElement>("jerseyType");
-    const ft = getElement<HTMLSelectElement>("fabricsType");
+  /** Returns `true` when the user has selected the Raw View radio. */
+  private isRawView(): boolean {
     const fr = document.querySelector<HTMLInputElement>(
       'input[name="format"]:checked',
     );
+    return fr?.value === "raw";
+  }
 
-    if (!ta || !fr) return;
+  /**
+   * Builds the output HTML string from generator methods.
+   * Raw View uses `generateDetailBoxes()`; all other formats use the
+   * standard `generateDetailTable()`.
+   */
+  private buildOutput(
+    gen: HTMLGenerator,
+    cName: string,
+    cAddress: string,
+    cContact: string,
+    jType: string,
+    fType: string,
+    analysis: ReturnType<DataProcessor["analyzeSummary"]>,
+    raw: boolean,
+  ): string {
+    const topInfo = gen.generateTopInfo(
+      cName,
+      cAddress,
+      cContact,
+      jType,
+      fType,
+      analysis,
+      this.ih.image,
+    );
+    const details = raw
+      ? gen.generateDetailBoxes()
+      : gen.generateDetailTable(analysis);
+    return topInfo + details;
+  }
+
+  private formatOrders(): void {
+    const ta = getElement<HTMLTextAreaElement>("inputText");
+    if (!ta) return;
 
     this.dp.processText(ta.value);
     if (this.dp.validRows.length === 0) {
@@ -77,32 +127,39 @@ export class OrderFormatterApp {
     }
 
     localStorage.setItem(STORAGE_KEYS.ORDER_DATA, ta.value);
-    const analysis = this.dp.analyzeSummary();
+
     const out = getElement("output");
     if (!out) return;
 
+    const analysis = this.dp.analyzeSummary();
     const gen = new HTMLGenerator(
       this.dp.validRows,
       this.dp.summaryData,
       this.dp.invalidCount,
       this.showIndex,
+      this.uppercase,
     );
-    const cName = clientName?.value || "",
-      cAddress = clientAddress?.value || "",
-      cContact = clientContact?.value || "",
-      jType = jt?.value || "POLO",
-      fType = ft?.value || "PP";
 
-    out.innerHTML =
-      gen.generateTopInfo(
-        cName,
-        cAddress,
-        cContact,
-        jType,
-        fType,
-        analysis,
-        this.ih.image,
-      ) + gen.generateDetailTable(analysis);
+    const cName = getElement<HTMLInputElement>("clientName")?.value || "";
+    const cAddress = getElement<HTMLInputElement>("clientAddress")?.value || "";
+    const cContact = getElement<HTMLInputElement>("clientContact")?.value || "";
+    const jType = getElement<HTMLSelectElement>("jerseyType")?.value || "POLO";
+    const fType = getElement<HTMLSelectElement>("fabricsType")?.value || "PP";
+
+    const raw = this.isRawView();
+    out.innerHTML = this.buildOutput(
+      gen,
+      cName,
+      cAddress,
+      cContact,
+      jType,
+      fType,
+      analysis,
+      raw,
+    );
+
+    // Toggle raw-view class on output so print CSS can scope @page portrait
+    out.classList.toggle("raw-view", raw);
 
     const ip = getElement("inputPage"),
       op = getElement("outputPage");
@@ -112,14 +169,10 @@ export class OrderFormatterApp {
     showToast("Formatted", "success");
     this.cr.initializeResizing();
     this.actionBtnDisable();
+    if (raw) requestAnimationFrame(() => this.adjustRawBoxHeights());
   }
 
   private regenerateOutput(): void {
-    const clientAddress = getElement<HTMLInputElement>("clientAddress");
-    const clientContact = getElement<HTMLInputElement>("clientContact");
-    const clientName = getElement<HTMLInputElement>("clientName");
-    const jt = getElement<HTMLSelectElement>("jerseyType");
-    const ft = getElement<HTMLSelectElement>("fabricsType");
     const out = getElement("output");
     if (!out) return;
 
@@ -129,25 +182,30 @@ export class OrderFormatterApp {
       this.dp.summaryData,
       this.dp.invalidCount,
       this.showIndex,
+      this.uppercase,
     );
-    const cName = clientName?.value || "",
-      cAddress = clientAddress?.value || "",
-      cContact = clientContact?.value || "",
-      jType = jt?.value || "POLO",
-      fType = ft?.value || "PP";
 
-    out.innerHTML =
-      gen.generateTopInfo(
-        cName,
-        cAddress,
-        cContact,
-        jType,
-        fType,
-        analysis,
-        this.ih.image,
-      ) + gen.generateDetailTable(analysis);
+    const cName = getElement<HTMLInputElement>("clientName")?.value || "";
+    const cAddress = getElement<HTMLInputElement>("clientAddress")?.value || "";
+    const cContact = getElement<HTMLInputElement>("clientContact")?.value || "";
+    const jType = getElement<HTMLSelectElement>("jerseyType")?.value || "POLO";
+    const fType = getElement<HTMLSelectElement>("fabricsType")?.value || "PP";
+
+    const raw = this.isRawView();
+    out.innerHTML = this.buildOutput(
+      gen,
+      cName,
+      cAddress,
+      cContact,
+      jType,
+      fType,
+      analysis,
+      raw,
+    );
+    out.classList.toggle("raw-view", raw);
 
     this.cr.initializeResizing();
+    if (raw) requestAnimationFrame(() => this.adjustRawBoxHeights());
   }
 
   private goBackToInput(): void {
@@ -158,17 +216,13 @@ export class OrderFormatterApp {
   }
 
   private copyAsPlainText(): void {
-    const clientAddress = getElement<HTMLInputElement>("clientAddress");
-    const clientContact = getElement<HTMLInputElement>("clientContact");
-    const clientName = getElement<HTMLInputElement>("clientName");
-    const jt = getElement<HTMLSelectElement>("jerseyType");
-    const ft = getElement<HTMLSelectElement>("fabricsType");
     const text = this.dp.generatePlainText(
-      clientName?.value || "",
-      clientAddress?.value || "",
-      clientContact?.value || "",
-      jt?.value || OrderKeywords.POLO,
-      ft?.value || "PP",
+      getElement<HTMLInputElement>("clientName")?.value || "",
+      getElement<HTMLInputElement>("clientAddress")?.value || "",
+      getElement<HTMLInputElement>("clientContact")?.value || "",
+      getElement<HTMLSelectElement>("jerseyType")?.value || OrderKeywords.POLO,
+      getElement<HTMLSelectElement>("fabricsType")?.value || "PP",
+      this.uppercase,
     );
     navigator.clipboard
       .writeText(text)
@@ -184,9 +238,83 @@ export class OrderFormatterApp {
     const jt = (getElement<HTMLSelectElement>("jerseyType")?.value ||
       OrderKeywords.POLO) as JerseyType;
     navigator.clipboard
-      .writeText(this.dp.exportToJSON(jt))
+      .writeText(this.dp.exportToJSON(jt, this.uppercase))
       .then(() => showToast("JSON copied", "success"))
       .catch(() => showToast("Failed", "error"));
+  }
+
+  /**
+   * Handles printing. When Raw View is active, injects a temporary `<style>`
+   * that overrides `@page` to A4 portrait, adds `print-raw` to `<body>`,
+   * then cleans up after the print dialog closes.
+   */
+  /**
+   * After raw-view renders, equalises box heights row-by-row so all rows
+   * together fill the remaining page height below the top-info-grid.
+   * Works with the 3-column grid applied by the ≤2480 px media query.
+   */
+  private adjustRawBoxHeights(): void {
+    const out = getElement("output");
+    if (!out || !out.classList.contains("raw-view")) return;
+
+    const grid = out.querySelector<HTMLElement>(".raw-details-grid");
+    if (!grid) return;
+
+    const boxes = Array.from(
+      grid.querySelectorAll<HTMLElement>(".raw-size-box"),
+    );
+    if (boxes.length === 0) return;
+
+    // Reset any previously-set heights so we can measure natural sizes
+    boxes.forEach((b) => (b.style.height = ""));
+
+    const COLS = 3;
+    const rows: HTMLElement[][] = [];
+    for (let i = 0; i < boxes.length; i += COLS) {
+      rows.push(boxes.slice(i, i + COLS));
+    }
+
+    // Available height = output container height minus everything above grid
+    const outRect = out.getBoundingClientRect();
+    const gridRect = grid.getBoundingClientRect();
+    const gapPx = parseFloat(getComputedStyle(grid).rowGap) || 10;
+
+    const availableH =
+      outRect.bottom - gridRect.top - gapPx * (rows.length - 1);
+
+    // Natural row heights — tallest box in each row
+    const naturalHeights = rows.map((row) =>
+      Math.max(...row.map((b) => b.getBoundingClientRect().height)),
+    );
+    const totalNatural = naturalHeights.reduce((a, b) => a + b, 0);
+
+    // Distribute available height proportionally to natural height
+    rows.forEach((row, ri) => {
+      const rowH = (naturalHeights[ri] / totalNatural) * availableH;
+      row.forEach((b) => (b.style.height = `${Math.floor(rowH)}px`));
+    });
+  }
+
+  private printOutput(): void {
+    const raw = this.isRawView();
+    let styleEl: HTMLStyleElement | null = null;
+
+    if (raw) {
+      document.body.classList.add("print-raw");
+      styleEl = document.createElement("style");
+      styleEl.id = "__raw-page-style";
+      styleEl.textContent =
+        "@media print { @page { size: A4 portrait; margin: 0; padding: 7mm; } }";
+      document.head.appendChild(styleEl);
+    }
+
+    window.print();
+
+    // Clean up after print dialog
+    if (raw) {
+      document.body.classList.remove("print-raw");
+      styleEl?.remove();
+    }
   }
 
   private handleKeyboardShortcuts(e: KeyboardEvent): void {
@@ -206,7 +334,7 @@ export class OrderFormatterApp {
       this.copyAsJSON();
     } else if (key === "p" && op?.style.display !== "none") {
       e.preventDefault();
-      window.print();
+      this.printOutput();
     }
   }
 }

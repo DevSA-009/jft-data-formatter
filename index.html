@@ -23,9 +23,9 @@
               <input type="radio" name="format" value="format1" checked />
               <span>Format 1: Standard Layout</span>
             </label>
-            <label class="disabled-label">
-              <input type="radio" name="format" value="format2" />
-              <span>Format 2: Tab Split View</span>
+            <label>
+              <input type="radio" name="format" value="raw" />
+              <span>Raw View</span>
             </label>
           </div>
         </div>
@@ -134,6 +134,10 @@ Example: M --- Name --- 10 --- LONG --- LONG --- LONG"
             <label class="checkbox-label">
               <input type="checkbox" id="showIndexCheckbox" />
               <span>Show Index</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="uppercaseCheckbox" />
+              <span>Use Uppercase</span>
             </label>
             <button class="btn btn-info" id="copyPlainBtn">
               Copy Plain Text

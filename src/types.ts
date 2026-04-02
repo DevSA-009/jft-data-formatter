@@ -124,7 +124,13 @@ export type FlatSummary = {
   BODY: number;
 };
 
-export type Player = Record<OrderKeywords.NAME | OrderKeywords.NUMBER, string>;
+export type Player = Record<
+  | OrderKeywords.NAME
+  | OrderKeywords.NUMBER
+  | OrderKeywords.SLEEVE
+  | OrderKeywords.PANT,
+  string
+>;
 
 export type InputDetails = Record<
   SizeKey,

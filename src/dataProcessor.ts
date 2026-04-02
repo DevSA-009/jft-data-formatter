@@ -123,6 +123,7 @@ export class DataProcessor {
     clientContact: string,
     jerseyType: string,
     fabricsType: string,
+    uppercase = false,
   ): string {
     const analysis = this.analyzeSummary();
     let text = `Client Name: ${clientName || "_______________"}\nClient Contact: ${clientContact || "_______________"}\nClient Address: ${clientAddress || "_______________"}\nJersey Type: ${jerseyType}\nFabrics: ${fabricsType}\n`;
@@ -178,8 +179,10 @@ export class DataProcessor {
         .filter((r) => r.SIZE === size && r.VALID)
         .forEach((r, idx) => {
           text += `  ${idx + 1}. `;
-          if (analysis.hasItems.NAME && r.NAME) text += `${r.NAME} `;
-          if (analysis.hasItems.NUMBER && r.NUMBER) text += `[${r.NUMBER}]`;
+          const n = uppercase ? r.NAME.toUpperCase() : r.NAME;
+          const num = uppercase ? r.NUMBER.toUpperCase() : r.NUMBER;
+          if (analysis.hasItems.NAME && n) text += `${n} `;
+          if (analysis.hasItems.NUMBER && num) text += `[${num}]`;
           text += "\n";
         });
       text += "\n";
@@ -223,7 +226,7 @@ export class DataProcessor {
     return result;
   }
 
-  exportToJSON(jerseyType: JerseyType): string {
+  exportToJSON(jerseyType: JerseyType, uppercase = false): string {
     // Create all sizes with empty structure first
     const groupedData = SIZE_ORDER.reduce((acc, size) => {
       acc[size] = {
@@ -294,7 +297,9 @@ export class DataProcessor {
       }
 
       // Add player data
-      data.push({ NAME, NUMBER });
+      const pName = uppercase ? NAME.toUpperCase() : NAME;
+      const pNumber = uppercase ? NUMBER.toUpperCase() : NUMBER;
+      data.push({ NAME: pName, NUMBER: pNumber, SLEEVE, PANT });
     });
 
     const transformedDetails = this.transformDetails(groupedData);

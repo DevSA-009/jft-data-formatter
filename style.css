@@ -28,7 +28,7 @@ body {
 .app-header {
   text-align: center;
   padding: 27px 47px;
-  border-bottom: 1px solid #d0d7de;
+  border-bottom: 1px solid #abb1b7;
 }
 
 .app-header h1 {
@@ -39,7 +39,7 @@ body {
 
 .output-header {
   padding: 23px 47px;
-  border-bottom: 1px solid #d0d7de;
+  border-bottom: 1px solid #abb1b7;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -64,7 +64,7 @@ body {
 .format-selection {
   padding: 23px 47px;
   background: #f6f8fa;
-  border-bottom: 1px solid #d0d7de;
+  border-bottom: 1px solid #abb1b7;
 }
 
 .format-selection h3 {
@@ -83,7 +83,7 @@ body {
   align-items: center;
   padding: 11px 19px;
   background: #ffffff;
-  border: 1px solid #d0d7de;
+  border: 1px solid #abb1b7;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
@@ -129,7 +129,7 @@ textarea {
   flex: 1;
   min-height: 437px;
   padding: 14px;
-  border: 1px solid #d0d7de;
+  border: 1px solid #abb1b7;
   border-radius: 6px;
   font-size: 0.87rem;
   font-family: "Courier New", monospace;
@@ -178,7 +178,7 @@ textarea:focus {
 .client-contact-item input {
   width: 100%;
   padding: 9px 13px;
-  border: 1px solid #d0d7de;
+  border: 1px solid #abb1b7;
   border-radius: 6px;
   font-size: 0.87rem;
 }
@@ -198,7 +198,7 @@ textarea:focus {
 .info-card select {
   width: 100%;
   padding: 9px 13px;
-  border: 1px solid #d0d7de;
+  border: 1px solid #abb1b7;
   border-radius: 6px;
   font-size: 0.87rem;
 }
@@ -230,14 +230,14 @@ textarea:focus {
 .btn-group {
   padding: 23px 47px;
   background: #f6f8fa;
-  border-top: 1px solid #d0d7de;
+  border-top: 1px solid #abb1b7;
 }
 
 .btn {
   padding: 11px 23px;
   font-size: 0.9rem;
   font-weight: 600;
-  border: 1px solid #d0d7de;
+  border: 1px solid #abb1b7;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
@@ -341,7 +341,7 @@ textarea:focus {
   gap: 23px;
   margin-bottom: 27px;
   padding: 17px;
-  border: 1px solid #d0d7de;
+  border: 1px solid #abb1b7;
   border-radius: 6px;
   background: #f6f8fa;
   align-items: start;
@@ -420,7 +420,7 @@ textarea:focus {
 
 .split-layout .info-block {
   padding: 17px;
-  border: 1px solid #d0d7de;
+  border: 1px solid #abb1b7;
   border-radius: 6px;
   background: #f6f8fa;
   display: flex;
@@ -466,7 +466,7 @@ textarea:focus {
 .section-header {
   margin: 24px 0 11px 0;
   padding-bottom: 9px;
-  border-bottom: 1px solid #d0d7de;
+  border-bottom: 1px solid #abb1b7;
 }
 
 .section-header h2 {
@@ -491,7 +491,7 @@ th,
 td {
   padding: 7px 9px;
   text-align: center;
-  border: 1px solid #d0d7de;
+  border: 1px solid #abb1b7;
 }
 
 th {
@@ -823,5 +823,210 @@ td.empty-cell {
 @media screen {
   #output::after {
     display: none;
+  }
+}
+
+/* ===== RAW VIEW STYLES ===== */
+
+/* Reduced gap for info-grid in raw view */
+.raw-view .info-grid {
+  gap: 6px;
+}
+
+/* Center image vertically in raw view */
+.raw-view .image-side {
+  align-self: center;
+}
+
+/* Detail boxes grid — responsive CSS grid, boxes fill available space */
+.raw-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+  align-items: stretch;
+}
+
+/* A4 portrait (≤2480px) + raw view: exactly 3 columns */
+@media (max-width: 2480px) {
+  .raw-view .raw-details-grid {
+    grid-template-columns: repeat(3, 1fr);
+    align-items: stretch;
+  }
+}
+
+/* One box per size — grows to fill remaining page width */
+.raw-size-box {
+  border: 1.5px solid transparent;
+  outline: 1px solid #abb1b7;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+}
+
+.raw-size-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 5px 8px;
+  background: #f6f8fa;
+  border-bottom: 1.5px solid #abb1b7;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.raw-player-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+/* Dynamic font size based on player count via data-count attribute */
+.raw-player-list li {
+  font-size: var(--rpl-size, 0.82rem);
+  line-height: 1.35;
+  padding: 1px 0;
+  border-bottom: 1px dotted #abb1b7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raw-player-list li:last-child {
+  border-bottom: none;
+}
+
+/* ≤5 players */
+.raw-size-box[data-count="1"] .raw-player-list li,
+.raw-size-box[data-count="2"] .raw-player-list li,
+.raw-size-box[data-count="3"] .raw-player-list li,
+.raw-size-box[data-count="4"] .raw-player-list li,
+.raw-size-box[data-count="5"] .raw-player-list li {
+  --rpl-size: 0.88rem;
+}
+
+/* 6–10 */
+.raw-size-box[data-count="6"] .raw-player-list li,
+.raw-size-box[data-count="7"] .raw-player-list li,
+.raw-size-box[data-count="8"] .raw-player-list li,
+.raw-size-box[data-count="9"] .raw-player-list li,
+.raw-size-box[data-count="10"] .raw-player-list li {
+  --rpl-size: 0.78rem;
+}
+
+/* 11–15 */
+.raw-size-box[data-count="11"] .raw-player-list li,
+.raw-size-box[data-count="12"] .raw-player-list li,
+.raw-size-box[data-count="13"] .raw-player-list li,
+.raw-size-box[data-count="14"] .raw-player-list li,
+.raw-size-box[data-count="15"] .raw-player-list li {
+  --rpl-size: 0.7rem;
+}
+
+/* 16–20 */
+.raw-size-box[data-count="16"] .raw-player-list li,
+.raw-size-box[data-count="17"] .raw-player-list li,
+.raw-size-box[data-count="18"] .raw-player-list li,
+.raw-size-box[data-count="19"] .raw-player-list li,
+.raw-size-box[data-count="20"] .raw-player-list li {
+  --rpl-size: 0.62rem;
+}
+
+/* 21+ — minimum readable size */
+.raw-size-box[data-count]:not([data-count="1"]):not([data-count="2"]):not(
+    [data-count="3"]
+  ):not([data-count="4"]):not([data-count="5"]):not([data-count="6"]):not(
+    [data-count="7"]
+  ):not([data-count="8"]):not([data-count="9"]):not([data-count="10"]):not(
+    [data-count="11"]
+  ):not([data-count="12"]):not([data-count="13"]):not([data-count="14"]):not(
+    [data-count="15"]
+  ):not([data-count="16"]):not([data-count="17"]):not([data-count="18"]):not(
+    [data-count="19"]
+  ):not([data-count="20"])
+  .raw-player-list
+  li {
+  --rpl-size: 0.54rem;
+}
+
+/* ===== RAW VIEW — PRINT (A4 PORTRAIT) ===== */
+
+/* Body gets .print-raw class from JS before window.print() */
+body.print-raw {
+  /* nothing needed at screen; scoped below */
+}
+
+@media print {
+  body.print-raw {
+    /* A4 portrait override via named page not possible in all browsers,
+       so we swap @page size here using a stylesheet injection trick in JS */
+  }
+
+  /* Raw view: tighter top info for portrait width */
+  body.print-raw .top-info-grid {
+    grid-template-columns: 0.45fr 0.55fr 1fr !important;
+    gap: 12px !important;
+  }
+
+  body.print-raw .info-grid {
+    gap: 5px !important;
+  }
+
+  body.print-raw .image-side {
+    align-self: center !important;
+  }
+
+  body.print-raw .image-side img {
+    max-height: 200px;
+  }
+
+  /* Raw detail boxes in print */
+  body.print-raw .raw-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 6px;
+  }
+
+  body.print-raw .raw-size-box {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  body.print-raw .raw-size-label {
+    font-size: 8px;
+    padding: 3px 4px;
+  }
+
+  body.print-raw .raw-player-list {
+    padding: 3px 5px;
+    gap: 1px;
+  }
+
+  body.print-raw .raw-size-box[data-count="1"] .raw-player-list li,
+  body.print-raw .raw-size-box[data-count="2"] .raw-player-list li,
+  body.print-raw .raw-size-box[data-count="3"] .raw-player-list li,
+  body.print-raw .raw-size-box[data-count="4"] .raw-player-list li,
+  body.print-raw .raw-size-box[data-count="5"] .raw-player-list li {
+    --rpl-size: 7.5px;
+  }
+
+  body.print-raw .raw-size-box[data-count="6"] .raw-player-list li,
+  body.print-raw .raw-size-box[data-count="7"] .raw-player-list li,
+  body.print-raw .raw-size-box[data-count="8"] .raw-player-list li,
+  body.print-raw .raw-size-box[data-count="9"] .raw-player-list li,
+  body.print-raw .raw-size-box[data-count="10"] .raw-player-list li {
+    --rpl-size: 7px;
+  }
+
+  body.print-raw .raw-player-list li {
+    font-size: var(--rpl-size, 7px);
+    line-height: 1.25;
   }
 }

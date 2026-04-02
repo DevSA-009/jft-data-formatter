@@ -34,8 +34,8 @@ export const parseLine = (line: string): OrderRow => {
     /^\s*$/.test(value) ? "" : value.trim();
   return {
     SIZE: parts[0] !== undefined ? normalizeSizes(parts[0]) : "",
-    NAME: parts[1] !== undefined ? clean(parts[1]).toUpperCase() : "",
-    NUMBER: parts[2] !== undefined ? clean(parts[2]).toUpperCase() : "",
+    NAME: parts[1] !== undefined ? clean(parts[1]) : "",
+    NUMBER: parts[2] !== undefined ? clean(parts[2]) : "",
     SLEEVE: parts[3] !== undefined ? (parts[3] || "").toUpperCase() : "",
     RIB: parts[4] !== undefined ? (parts[4] || "").toUpperCase() : "",
     PANT: parts[5] !== undefined ? (parts[5] || "").toUpperCase() : "",

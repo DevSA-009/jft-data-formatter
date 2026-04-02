@@ -3,10 +3,22 @@ import {
   AnalysisResult,
   OrderKeywords,
   OrderRow,
+  SizeKey,
   SummaryData,
   TableBaseHeads,
 } from "./types";
 import { formatSizeForDisplay, sortSizes } from "./utils";
+
+/** Player label format: `Name (Number)-SLEEVE_SLEEVE-PANT_PANT` */
+const formatPlayerLabel = (r: OrderRow, uppercase: boolean): string => {
+  const name = uppercase ? (r.NAME || "").toUpperCase() : r.NAME || "";
+  const num = uppercase ? (r.NUMBER || "").toUpperCase() : r.NUMBER || "";
+  const slv = r.SLEEVE ? `(${r.SLEEVE} SLEEVE)` : "";
+  const pnt = r.PANT && r.PANT !== "NO" ? `(${r.PANT} PANT)` : "";
+  const suffix = [slv, pnt].filter(Boolean).join("--");
+  const base = num ? `${name} (${num})` : name;
+  return suffix ? `${base}--${suffix}` : base;
+};
 
 export class HTMLGenerator {
   constructor(
@@ -14,8 +26,12 @@ export class HTMLGenerator {
     private summaryData: Record<string, SummaryData>,
     private invalidCount: number,
     private showIndex: boolean,
+    private uppercase: boolean = false,
   ) {}
 
+  /**
+   * Generates the top info grid section (shared between formats).
+   */
   generateTopInfo(
     cName: string,
     cAddress: string,
@@ -44,6 +60,9 @@ export class HTMLGenerator {
     </div>`;
   }
 
+  /**
+   * Generates the summary table shown in the top info grid.
+   */
   generateSummaryTable(analysis: AnalysisResult): string {
     const { LONG, SHORT, PANT, RIB, TOTAL, SIZE, QTY } = OrderKeywords;
 
@@ -94,6 +113,9 @@ export class HTMLGenerator {
     return html + "</tbody></table>";
   }
 
+  /**
+   * Generates the standard detail table (used when format1 is selected).
+   */
   generateDetailTable(analysis: AnalysisResult): string {
     const { SIZE, LONG, SHORT, NO, SLEEVE, NAME, NUMBER, YES } = OrderKeywords;
 
@@ -127,6 +149,10 @@ export class HTMLGenerator {
           finalTableHeads.forEach((head) => {
             let mainValue = r[head];
             let fallbackValue = "-";
+
+            if (this.uppercase && (head === NAME || head === NUMBER)) {
+              mainValue = mainValue.toUpperCase();
+            }
 
             if (head === SIZE) {
               mainValue = formatSizeForDisplay(mainValue);
@@ -186,6 +212,10 @@ export class HTMLGenerator {
           let mainValue = r[head];
           let fallbackValue = "-";
 
+          if (this.uppercase && (head === NAME || head === NUMBER)) {
+            mainValue = mainValue.toUpperCase();
+          }
+
           if (head === SIZE && reasonHead !== SIZE) {
             mainValue = formatSizeForDisplay(mainValue);
           }
@@ -220,5 +250,38 @@ export class HTMLGenerator {
       });
 
     return html + "</tbody></table>";
+  }
+
+  /**
+   * Generates Raw View detail boxes — one bordered box per size.
+   * All players of a size fit in a single box. `data-count` attribute
+   * is used by CSS `container` queries to shrink font dynamically.
+   * Sizes with zero players are skipped entirely.
+   */
+  generateDetailBoxes(): string {
+    const sizes = sortSizes([
+      ...new Set(this.validRows.filter((r) => r.VALID).map((r) => r.SIZE)),
+    ]) as SizeKey[];
+
+    if (sizes.length === 0) return "";
+
+    let html =
+      '<div class="section-header"><h2>Details List</h2></div><div class="raw-details-grid">';
+
+    sizes.forEach((size) => {
+      const players = this.validRows.filter((r) => r.SIZE === size && r.VALID);
+      const count = players.length;
+
+      html += `<div class="raw-size-box" data-count="${count}">`;
+      html += `<div class="raw-size-label">${formatSizeForDisplay(size)}</div>`;
+      html += `<ul class="raw-player-list">`;
+      players.forEach((r) => {
+        html += `<li>${formatPlayerLabel(r, this.uppercase)}</li>`;
+      });
+      html += `</ul></div>`;
+    });
+
+    html += "</div>";
+    return html;
   }
 }
