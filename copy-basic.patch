@@ -1,0 +1,126 @@
+diff --git a/index.html b/index.html
+index a62f1fb..8bc35c1 100644
+--- a/index.html
++++ b/index.html
+@@ -142,6 +142,9 @@ Example: M --- Name --- 10 --- LONG --- LONG --- LONG"
+             <button class="btn btn-info" id="copyPlainBtn">
+               Copy Plain Text
+             </button>
++            <button class="btn btn-info" id="copyBasicBtn">
++              Copy Basic
++            </button>
+             <button class="btn btn-success" id="copyBtnOutput">
+               Copy JSON (Ctrl+C)
+             </button>
+diff --git a/src/app.ts b/src/app.ts
+index 1baeaa3..955af8d 100644
+--- a/src/app.ts
++++ b/src/app.ts
+@@ -37,6 +37,7 @@ export class OrderFormatterApp {
+     const disable = (id: string, action: boolean) =>
+       ((getElement(id) as HTMLButtonElement).disabled = action);
+     disable("copyPlainBtn", !!this.dp.invalidCount);
++    disable("copyBasicBtn", !!this.dp.invalidCount);
+     disable("copyBtnOutput", !!this.dp.invalidCount);
+     disable("printBtnOutput", !!this.dp.invalidCount);
+   }
+@@ -53,6 +54,7 @@ export class OrderFormatterApp {
+     attach("formatBtn", "click", () => this.formatOrders());
+     attach("backBtn", "click", () => this.goBackToInput());
+     attach("copyPlainBtn", "click", () => this.copyAsPlainText());
++    attach("copyBasicBtn", "click", () => this.copyAsBasicText());
+     attach("copyBtnOutput", "click", () => this.copyAsJSON());
+     attach("printBtnOutput", "click", () => this.printOutput());
+     attach("showIndexCheckbox", "change", (e) => {
+@@ -230,6 +232,17 @@ export class OrderFormatterApp {
+       .catch(() => showToast("Failed", "error"));
+   }
+ 
++  private copyAsBasicText(): void {
++    if (this.dp.validRows.filter((r) => r.VALID).length === 0) {
++      showToast("No valid data", "error");
++      return;
++    }
++    navigator.clipboard
++      .writeText(this.dp.generateBasicText(this.uppercase))
++      .then(() => showToast("Basic text copied", "success"))
++      .catch(() => showToast("Failed", "error"));
++  }
++
+   private copyAsJSON(): void {
+     if (this.dp.validRows.filter((r) => r.VALID).length === 0) {
+       showToast("No valid data", "error");
+diff --git a/src/dataProcessor.ts b/src/dataProcessor.ts
+index fc6ecd1..e8a0e21 100644
+--- a/src/dataProcessor.ts
++++ b/src/dataProcessor.ts
+@@ -192,6 +192,69 @@ export class DataProcessor {
+     return text;
+   }
+ 
++  /**
++   * Builds a compact, re-pasteable text: one line per valid player.
++   *
++   * Quantity mode: when no valid row has a NAME or a NUMBER, one line per
++   * size is returned instead, as `SIZE=quantity`.
++   * If only one of NAME / NUMBER exists, the empty column is omitted.
++   *
++   * Base columns `SIZE-NAME-NUMBER` are always included. `SLEEVE`, `RIB` and
++   * `PANT` are appended only when their value differs between valid rows;
++   * a column where every row has the same value is omitted.
++   * Empty values use the same fallbacks as the detail table
++   * (SLEEVE -> SHORT, RIB/PANT -> NO) before the comparison.
++   *
++   * @param uppercase - Uppercase NAME and NUMBER when `true`.
++   * @param separator - Column separator (default `-`).
++   */
++  generateBasicText(uppercase = false, separator = "-"): string {
++    const { SLEEVE, RIB, PANT, SHORT, NO } = OrderKeywords;
++    const rows = this.validRows.filter((r) => r.VALID);
++
++    const fallbacks = {
++      [SLEEVE]: SHORT as string,
++      [RIB]: NO as string,
++      [PANT]: NO as string,
++    } as const;
++    const optionalHeads = [SLEEVE, RIB, PANT] as const;
++
++    const valueOf = (r: OrderRow, head: (typeof optionalHeads)[number]) =>
++      r[head] || fallbacks[head];
++
++    // Keep only the optional columns whose values are not identical
++    const activeHeads = optionalHeads.filter(
++      (head) => new Set(rows.map((r) => valueOf(r, head))).size > 1,
++    );
++
++    const hasName = rows.some((r) => r.NAME);
++    const hasNumber = rows.some((r) => r.NUMBER);
++    const sizes = sortSizes([...new Set(rows.map((r) => r.SIZE))]);
++
++    // Quantity mode: no NAME and no NUMBER anywhere -> "SIZE=quantity"
++    if (!hasName && !hasNumber) {
++      return sizes
++        .map((size) => `${size}=${rows.filter((r) => r.SIZE === size).length}`)
++        .join("\n");
++    }
++
++    const lines: string[] = [];
++    sizes.forEach((size) => {
++      rows
++        .filter((r) => r.SIZE === size)
++        .forEach((r) => {
++          const parts: string[] = [r.SIZE];
++          if (hasName) parts.push(uppercase ? r.NAME.toUpperCase() : r.NAME);
++          if (hasNumber)
++            parts.push(uppercase ? r.NUMBER.toUpperCase() : r.NUMBER);
++          activeHeads.forEach((h) => parts.push(valueOf(r, h)));
++          lines.push(parts.join(separator));
++        });
++    });
++
++    return lines.join("\n");
++  }
++
+   transformDetails(details: InputDetails): OutputDetails {
+     const result = {} as OutputDetails;
+ 

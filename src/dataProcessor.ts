@@ -192,6 +192,69 @@ export class DataProcessor {
     return text;
   }
 
+  /**
+   * Builds a compact, re-pasteable text: one line per valid player.
+   *
+   * Quantity mode: when no valid row has a NAME or a NUMBER, one line per
+   * size is returned instead, as `SIZE=quantity`.
+   * If only one of NAME / NUMBER exists, the empty column is omitted.
+   *
+   * Base columns `SIZE-NAME-NUMBER` are always included. `SLEEVE`, `RIB` and
+   * `PANT` are appended only when their value differs between valid rows;
+   * a column where every row has the same value is omitted.
+   * Empty values use the same fallbacks as the detail table
+   * (SLEEVE -> SHORT, RIB/PANT -> NO) before the comparison.
+   *
+   * @param uppercase - Uppercase NAME and NUMBER when `true`.
+   * @param separator - Column separator (default `-`).
+   */
+  generateBasicText(uppercase = false, separator = "-"): string {
+    const { SLEEVE, RIB, PANT, SHORT, NO } = OrderKeywords;
+    const rows = this.validRows.filter((r) => r.VALID);
+
+    const fallbacks = {
+      [SLEEVE]: SHORT as string,
+      [RIB]: NO as string,
+      [PANT]: NO as string,
+    } as const;
+    const optionalHeads = [SLEEVE, RIB, PANT] as const;
+
+    const valueOf = (r: OrderRow, head: (typeof optionalHeads)[number]) =>
+      r[head] || fallbacks[head];
+
+    // Keep only the optional columns whose values are not identical
+    const activeHeads = optionalHeads.filter(
+      (head) => new Set(rows.map((r) => valueOf(r, head))).size > 1,
+    );
+
+    const hasName = rows.some((r) => r.NAME);
+    const hasNumber = rows.some((r) => r.NUMBER);
+    const sizes = sortSizes([...new Set(rows.map((r) => r.SIZE))]);
+
+    // Quantity mode: no NAME and no NUMBER anywhere -> "SIZE=quantity"
+    if (!hasName && !hasNumber) {
+      return sizes
+        .map((size) => `${size}=${rows.filter((r) => r.SIZE === size).length}`)
+        .join("\n");
+    }
+
+    const lines: string[] = [];
+    sizes.forEach((size) => {
+      rows
+        .filter((r) => r.SIZE === size)
+        .forEach((r) => {
+          const parts: string[] = [r.SIZE];
+          if (hasName) parts.push(uppercase ? r.NAME.toUpperCase() : r.NAME);
+          if (hasNumber)
+            parts.push(uppercase ? r.NUMBER.toUpperCase() : r.NUMBER);
+          activeHeads.forEach((h) => parts.push(valueOf(r, h)));
+          lines.push(parts.join(separator));
+        });
+    });
+
+    return lines.join("\n");
+  }
+
   transformDetails(details: InputDetails): OutputDetails {
     const result = {} as OutputDetails;
 

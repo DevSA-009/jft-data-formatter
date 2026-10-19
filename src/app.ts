@@ -37,6 +37,7 @@ export class OrderFormatterApp {
     const disable = (id: string, action: boolean) =>
       ((getElement(id) as HTMLButtonElement).disabled = action);
     disable("copyPlainBtn", !!this.dp.invalidCount);
+    disable("copyBasicBtn", !!this.dp.invalidCount);
     disable("copyBtnOutput", !!this.dp.invalidCount);
     disable("printBtnOutput", !!this.dp.invalidCount);
   }
@@ -53,6 +54,7 @@ export class OrderFormatterApp {
     attach("formatBtn", "click", () => this.formatOrders());
     attach("backBtn", "click", () => this.goBackToInput());
     attach("copyPlainBtn", "click", () => this.copyAsPlainText());
+    attach("copyBasicBtn", "click", () => this.copyAsBasicText());
     attach("copyBtnOutput", "click", () => this.copyAsJSON());
     attach("printBtnOutput", "click", () => this.printOutput());
     attach("showIndexCheckbox", "change", (e) => {
@@ -227,6 +229,17 @@ export class OrderFormatterApp {
     navigator.clipboard
       .writeText(text)
       .then(() => showToast("Plain text copied", "success"))
+      .catch(() => showToast("Failed", "error"));
+  }
+
+  private copyAsBasicText(): void {
+    if (this.dp.validRows.filter((r) => r.VALID).length === 0) {
+      showToast("No valid data", "error");
+      return;
+    }
+    navigator.clipboard
+      .writeText(this.dp.generateBasicText(this.uppercase))
+      .then(() => showToast("Basic text copied", "success"))
       .catch(() => showToast("Failed", "error"));
   }
 
